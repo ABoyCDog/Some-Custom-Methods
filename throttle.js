@@ -50,37 +50,27 @@ const throttle = function(fn, wait) {
 
 
 // 使用两种结合，第一次能触发，停止触发的时候还能再执行一次
-const throttle = function(fn, wait) {
-    let timeout, context, args
-    let previous = 0
-
-    var later = function() {
-        previous = new Date().getTime()
-        timeout = null
+const throttle = function(fn, delay = 1500, mustRun = 30) {
+    let timmer = null
+    let start = null
+    let context = this
+    return function() {
+      let current = +(new Date())
+      let args = Array.prototype.slice.call(arguments)
+      clearTimeout(timmer)
+      if(start) {
+        start = current
+      }
+      if(current - start > mustRun) {
         fn.apply(context, args)
+        start = current
+      } else {
+        timmer = setTimeout(() => {
+          fn.apply(context, args)
+        }, delay)
+      }
     }
-
-    var throttle = function() {
-        var now = new Date().getTime()
-        // 下次触发 fn 剩余时间
-        var remaining = wait - (now - previous)
-        context = this
-        args = arguments
-        // 如果没有剩余时间 或者 改了系统时间
-        if(remaining <= 0 || remaining > wait) {
-            if(timeout) {
-                clearTimeout(timeout)
-                timeout = null
-            }
-            previous = now
-            fn.apply(context,args)
-        } else if(!timeout) {
-            timeout = setTimeout(later, remaining);
-        }
-    }
-
-    return throttled
-}
+  }
 
 // 优化
 function throttle(func, wait, options) {
